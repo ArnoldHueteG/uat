@@ -1,0 +1,86 @@
+{
+	"name": "Contactabilidad2",
+	"properties": {
+		"description": "Descripcion completa: Flujo de los archivos de Score de Contactabilidad (Gobierno de Datos)\nFrecuencia: De Lunes a Viernes\nReprocesable: Si\n",
+		"activities": [
+			{
+				"name": "Contactabilidad",
+				"type": "DatabricksNotebook",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Shared/Contactabilidad/1_Contactabilidad",
+					"baseParameters": {
+						"fechaarchivo": {
+							"value": "@pipeline().parameters.fechaarchivo",
+							"type": "Expression"
+						},
+						"ejecucion_adf": {
+							"value": "@string(json(xml(concat(\n'<root>',\nconcat('<scheduledExecuTime>', pipeline().parameters.trigger_fec_progr_ejecuc, '</scheduledExecuTime>'),\nconcat('<pipelineRunId>', pipeline().RunId, '</pipelineRunId>'),\nconcat('<dataFactory>', pipeline().DataFactory, '</dataFactory>'),\nconcat('<nombrePipeline>', pipeline().Pipeline, '</nombrePipeline>'),\nconcat('<triggerName>', pipeline().TriggerName, '</triggerName>'),\n'</root>'\n))))",
+							"type": "Expression"
+						},
+						"proceso": {
+							"value": "parametros/procesos/GrpContactabilidad_Test.json",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Baja Throughput al minimo",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Contactabilidad",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Shared/Contactabilidad/2_Control",
+					"baseParameters": {
+						"proceso": "parametros/procesos/GrpContactabilidad.json"
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"fechaarchivo": {
+				"type": "string"
+			},
+			"trigger_fec_progr_ejecuc": {
+				"type": "string",
+				"defaultValue": "Ejecutado a peticion (Manual Trigger)"
+			}
+		},
+		"folder": {
+			"name": "Contactabilidad"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

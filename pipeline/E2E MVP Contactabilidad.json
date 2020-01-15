@@ -1,0 +1,373 @@
+{
+	"name": "E2E MVP Contactabilidad",
+	"properties": {
+		"description": "Descripcion completa: Flujo de los archivos de Score de Contactabilidad (Gobierno de Datos)\nFrecuencia: De Lunes a Viernes\nReprocesable: Si\n",
+		"activities": [
+			{
+				"name": "Transformacion CONTACTABILIDAD",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Validacion DATA_TELEFONOS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Shared/Contactabilidad/GDContactabilidad/transf_CONTACTABILIDAD",
+					"baseParameters": {
+						"telefonos_estructura_contenedor": {
+							"value": "@activity('Cargar Variables').output.telefonos_estructura_contenedor",
+							"type": "Expression"
+						},
+						"telefonos_estructura_ruta": {
+							"value": "@activity('Cargar Variables').output.telefonos_estructura_ruta",
+							"type": "Expression"
+						},
+						"emails_estructura_contenedor": {
+							"value": "@activity('Cargar Variables').output.emails_estructura_contenedor",
+							"type": "Expression"
+						},
+						"emails_estructura_ruta": {
+							"value": "@activity('Cargar Variables').output.emails_estructura_ruta",
+							"type": "Expression"
+						},
+						"cross_basededatos": {
+							"value": "@activity('Cargar Variables').output.cross_basededatos",
+							"type": "Expression"
+						},
+						"cross_coleccion": {
+							"value": "@activity('Cargar Variables').output.cross_coleccion",
+							"type": "Expression"
+						},
+						"pipeline_ini_paso": {
+							"value": "@formatDateTime(addhours(utcnow(), -5), 'yyyyMMdd HH:mm:ss')",
+							"type": "Expression"
+						},
+						"proceso_fecha_proceso": {
+							"value": "@pipeline().parameters.fecha_proceso",
+							"type": "Expression"
+						},
+						"proceso_id_proceso": {
+							"value": "@activity('Cargar Variables').output.proceso_id_proceso",
+							"type": "Expression"
+						},
+						"proceso_grupo_stage": {
+							"value": "@activity('Cargar Variables').output.proceso_grupo_stage",
+							"type": "Expression"
+						},
+						"trigger_fec_progr_ejecuc": {
+							"value": "@pipeline().parameters.trigger_fec_progr_ejecuc",
+							"type": "Expression"
+						},
+						"control_basededatos": {
+							"value": "@activity('Cargar Variables').output.control_basededatos",
+							"type": "Expression"
+						},
+						"control_coleccion": {
+							"value": "@activity('Cargar Variables').output.control_coleccion",
+							"type": "Expression"
+						},
+						"pipeline_run_id": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						},
+						"channel_basededatos": {
+							"value": "@activity('Cargar Variables').output.channel_basededatos",
+							"type": "Expression"
+						},
+						"channel_coleccion": {
+							"value": "@activity('Cargar Variables').output.channel_coleccion",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Validacion DATA_EMAILS",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Cargar Variables",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Shared/Contactabilidad/Validacion/Valid delimitado",
+					"baseParameters": {
+						"estructura_contenedor": {
+							"value": "@activity('Cargar Variables').output.emails_estructura_contenedor",
+							"type": "Expression"
+						},
+						"estructura_ruta": {
+							"value": "@activity('Cargar Variables').output.emails_estructura_ruta",
+							"type": "Expression"
+						},
+						"control_basededatos": {
+							"value": "@activity('Cargar Variables').output.control_basededatos",
+							"type": "Expression"
+						},
+						"control_coleccion": {
+							"value": "@activity('Cargar Variables').output.control_coleccion",
+							"type": "Expression"
+						},
+						"pipeline_ini_paso": {
+							"value": "@formatDateTime(addhours(utcnow(), -5), 'yyyyMMdd HH:mm:ss')",
+							"type": "Expression"
+						},
+						"trigger_fec_progr_ejecuc": {
+							"value": "@pipeline().parameters.trigger_fec_progr_ejecuc",
+							"type": "Expression"
+						},
+						"proceso_fecha_proceso": {
+							"value": "@pipeline().parameters.fecha_proceso",
+							"type": "Expression"
+						},
+						"proceso_id_proceso": {
+							"value": "@activity('Cargar Variables').output.proceso_id_proceso",
+							"type": "Expression"
+						},
+						"proceso_grupo_stage": {
+							"value": "@activity('Cargar Variables').output.proceso_grupo_stage",
+							"type": "Expression"
+						},
+						"pipeline_run_id": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Validacion DATA_TELEFONOS",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Validacion DATA_EMAILS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Shared/Contactabilidad/Validacion/Valid delimitado",
+					"baseParameters": {
+						"estructura_contenedor": {
+							"value": "@activity('Cargar Variables').output.telefonos_estructura_contenedor",
+							"type": "Expression"
+						},
+						"estructura_ruta": {
+							"value": "@activity('Cargar Variables').output.telefonos_estructura_ruta",
+							"type": "Expression"
+						},
+						"control_basededatos": {
+							"value": "@activity('Cargar Variables').output.control_basededatos",
+							"type": "Expression"
+						},
+						"control_coleccion": {
+							"value": "@activity('Cargar Variables').output.control_coleccion",
+							"type": "Expression"
+						},
+						"pipeline_ini_paso": {
+							"value": "@formatDateTime(addhours(utcnow(), -5), 'yyyyMMdd HH:mm:ss')",
+							"type": "Expression"
+						},
+						"trigger_fec_progr_ejecuc": {
+							"value": "@pipeline().parameters.trigger_fec_progr_ejecuc",
+							"type": "Expression"
+						},
+						"proceso_fecha_proceso": {
+							"value": "@pipeline().parameters.fecha_proceso",
+							"type": "Expression"
+						},
+						"proceso_id_proceso": {
+							"value": "@activity('Cargar Variables').output.proceso_id_proceso",
+							"type": "Expression"
+						},
+						"proceso_grupo_stage": {
+							"value": "@activity('Cargar Variables').output.proceso_grupo_stage",
+							"type": "Expression"
+						},
+						"pipeline_run_id": {
+							"value": "@pipeline().RunId",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Cargar Variables",
+				"type": "AzureFunctionActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"functionName": "HttpTrigger2",
+					"method": "GET"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureFunction",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Set down throughput 1",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Validacion DATA_EMAILS",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Shared/Contactabilidad/Utilities/6. Set Down Throughput",
+					"baseParameters": {
+						"basededatos": {
+							"value": "@activity('Cargar Variables').output.cross_basededatos",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Set down throughput 2",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Validacion DATA_TELEFONOS",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Shared/Contactabilidad/Utilities/6. Set Down Throughput",
+					"baseParameters": {
+						"basededatos": {
+							"value": "@activity('Cargar Variables').output.cross_basededatos",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Set down throughput 3",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "Transformacion CONTACTABILIDAD",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Shared/Contactabilidad/Utilities/6. Set Down Throughput",
+					"baseParameters": {
+						"basededatos": {
+							"value": "@activity('Cargar Variables').output.cross_basededatos",
+							"type": "Expression"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricks",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"fecha_proceso": {
+				"type": "string"
+			},
+			"trigger_fec_progr_ejecuc": {
+				"type": "string",
+				"defaultValue": "Ejecutado a peticion (Manual Trigger)"
+			}
+		},
+		"folder": {
+			"name": "MVP Contactabilidad"
+		},
+		"annotations": []
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
